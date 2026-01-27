@@ -7,10 +7,19 @@
     window.hasRun = true;
     let average_bonus = 0;
     let clicked_el;
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.innerHTML = '<tr><td style="height:10px;"><div id="GInterface.Instances[2].Instances[1].Instances[0]_Grille_Elements_statut_14" style="background-color: white; color: rgb(192, 0, 0); height: 13px;" class="EtiquetteCours"><div class="NoWrap ie-ellipsis" style="margin:0px 1px; position:relative;width:298px;" data-tooltip="ellipsis">Cours annulé</div></div></td></tr>';
     const cancelled_class = div.firstChild;
-    
+    for (const button of document.querySelectorAll(".button-cancelled")) {
+        button.remove();
+    }
+    const button_cancelled = document.createElement("button");
+    button_cancelled.className = "button-cancelled";
+    button_cancelled.textContent = "Annuler le cours";
+    const el = document.createElement("link");
+    el.rel = "stylesheet";
+    el.href = browser.runtime.getURL("pronote.css");
+    document.head.appendChild(el);
 
     function getUserImage(nb_tries) {
         return new Promise((resolve, reject) => {
@@ -110,7 +119,6 @@
     });
 
     document.addEventListener("contextmenu", (event) => {
-        event.stopPropagation();
         clicked_el = event.target;
         if (clicked_el) {
             while (!clicked_el.matches(".EmploiDuTemps_Element")) {
@@ -121,31 +129,37 @@
                 clicked_el = clicked_el.parentNode;
             }
         }
-        browser.runtime.sendMessage({
-            type: "edt-action",
-            action: Boolean(clicked_el)
-        }).then(() => {}).catch(() => {});
+        if (clicked_el) {
+            try {
+                document.body.appendChild(button_cancelled);
+            } catch (e) {}
+            button_cancelled.style.left = (event.clientX + 20) + "px";
+            button_cancelled.style.top = event.clientY + "px";
+            button_cancelled.style.display = "";
+        }
         }, true);
 
-    browser.runtime.onMessage.addListener((message) => {
-        if (message.type === "edt_actions") {
-            if (!clicked_el) return false;
-            let tbody
-            try {
-                tbody = clicked_el.firstChild.firstChild.firstChild;
-            } catch (e) {return false}
-            if (tbody.nodeName != "TBODY" || tbody.children.length != 1) return false;
-            let td
-            try {
-                td = tbody.firstChild.firstChild;
-            } catch (e) {return false}
-            if (td.nodeName != "TD") return false;
-            if (td.children.length > 3) {
-                td.children[td.children.length-1].remove()
-            }
-            tbody.insertBefore(cancelled_class.cloneNode(true), tbody.firstChild);
-            return true;
+    button_cancelled.addEventListener("click", () => {
+        button_cancelled.style.display = "none";
+        if (!clicked_el) return;
+        let tbody
+        try {
+            tbody = clicked_el.firstChild.firstChild.firstChild;
+        } catch (e) {return}
+        if (tbody.nodeName != "TBODY" || tbody.children.length != 1) return;
+        let td
+        try {
+            td = tbody.firstChild.firstChild;
+        } catch (e) {return}
+        if (td.nodeName != "TD") return;
+        if (td.children.length > 3) {
+            td.children[td.children.length-1].remove()
         }
+        tbody.insertBefore(cancelled_class.cloneNode(true), tbody.firstChild);
     });
+
+    document.body.addEventListener("click", () => {
+        button_cancelled.style.display = "none";
+    })
 
 })();
