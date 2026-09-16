@@ -8,7 +8,7 @@
     let average_bonus = 0;
     let clicked_el;
     const div = document.createElement("div");
-    div.innerHTML = '<tr><td style="height:10px;"><div id="GInterface.Instances[2].Instances[1].Instances[0]_Grille_Elements_statut_14" style="background-color: white; color: rgb(192, 0, 0); height: 13px;" class="EtiquetteCours"><div class="NoWrap ie-ellipsis" style="margin:0px 1px; position:relative;width:298px;" data-tooltip="ellipsis">Cours annulé</div></div></td></tr>';
+    div.innerHTML = '<div id="IE.Identite.collection._1.Instances[2].Instances[1].Instances[0]_Grille_Elements_statut_11" style="background-color: white; color: rgb(192, 0, 0); height: 13px;" class="EtiquetteCours"><div class="NoWrap ie_ellipsis" style="margin:0px 1px;position:relative;width:298px;" data-tooltip="contentEllipsis">Cours annulé</div></div>';
     const cancelled_class = div.firstChild;
     for (const button of document.querySelectorAll(".button-cancelled")) {
         button.remove();
@@ -142,20 +142,17 @@
     button_cancelled.addEventListener("click", () => {
         button_cancelled.style.display = "none";
         if (!clicked_el) return;
-        let tbody
-        try {
-            tbody = clicked_el.firstChild.firstChild.firstChild;
-        } catch (e) {return}
-        if (tbody.nodeName != "TBODY" || tbody.children.length != 1) return;
-        let td
-        try {
-            td = tbody.firstChild.firstChild;
-        } catch (e) {return}
-        if (td.nodeName != "TD") return;
-        if (td.children.length > 3) {
-            td.children[td.children.length-1].remove()
+        let div;
+        if (clicked_el.classList.contains("content_cours")) {
+            div = clicked_el;
+        } else {
+            div = clicked_el.querySelector(".content_cours");
         }
-        tbody.insertBefore(cancelled_class.cloneNode(true), tbody.firstChild);
+        if (!div || div.parentNode.children.length > 2) return;
+        if (div.children.length > 3) {
+            div.children[div.children.length-1].remove()
+        }
+        div.parentNode.insertBefore(cancelled_class.cloneNode(true), div);
     });
 
     document.body.addEventListener("click", () => {
